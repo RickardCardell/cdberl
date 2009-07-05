@@ -1,0 +1,85 @@
+README for the cdb-modules
+
+You need:
+CouchDB >=0.90
+Mnesiaex  http://code.google.com/p/mnesiaex/
+
+Put the lib in a path accesbile by erlang either with 
+    erl -pa <path-to-cdberl/ebin>
+or just put cdberl in erlang/lib/.
+
+What will work:
+- transactions
+- locks 
+- ordinary mnesia-calls
+
+What will work with some ad_hoc-modifications of the code:
+- mnesia:select, mnesia:index_read
+- 'complex datatypes' as port, pid, funs, +32bit integers and so on needs some 
+   modification of the code in order to work due to impedance mismatch 
+  (they need to be encoded as a base64-string or similar, or tagged up like the 
+   tuple-type)
+
+What doesn't work:
+- the things that are not working with mnesiaex
+- revision control (are ignored due to the pessimistic currency control of mnesia)
+
+
+Misc information
+- cdberl communicates with CouchDB via HTTP by using the erlang_couchdb module
+- for now cdb_com assumes that there are one, and only one, design document 
+	with the same name as the table name, but with some modification of 
+	cdb_com:all_keys that can be ignored.
+- for more information check inline documentation or send me a message!
+
+- to add a table we sometimes need to add cases to the following functions:
+	
+	cdb_doc:rec_to_doc/2  * 
+	cdb_doc:doc_to_rec/2  *
+	cdb_util:default_vals/1 **
+	cdb_util:encode_key/2 *  
+	cdb_util:decode_key/2 *
+	
+	* only needs to be implemented if there are special "terms" that collide with	
+	  json types and javascript inbuilt types. I.e
+	  integers > 32bit will be converted to floats upon insertion in database and
+	  converted back to integer when reading the value. That leads 
+	  to the implication that integers with more than ~16 digits will be converted
+	  to float and truncated when converting back to integer. It also leads to the 
+	  fact that floats cannot be stored in database unless special implementation 
+	  in cdb_doc:doc_to_rec and rec_to_doc is done.
+
+	** if don't want to use mnesia you can access couchdb with cdberl directly but 
+	   then you need to specify the default-values for the record in 
+	   cdb_util:default_vals/1 otherwise you will get an exception
+	
+
+Example:
+Erlang (BEAM) emulator version 5.6.5 [source] [64-bit] [smp:4] [async-threads:0] [hipe] [kernel-poll:false]
+
+Eshell V5.6.5  (abort with ^G)
+(rc@sillhaj)1> cdberl:start().
+ok
+(rc@sillhaj)2> mnesia:start().
+ok
+(rc@sillhaj)3> mnesia:change_table_copy_type (schema, node (), disc_copies).
+{atomic,ok}
+(rc@sillhaj)4>mnesia:create_table(testtable,[{ type, { external, ordered_set, cdb_tab } }, { external_copies, [ node () ]}, {attributes, record_info(fields,employee)}]).
+{atomic,ok}
+(rc@sillhaj)5>mnesia:dirty_write({testtable, foo, bar}),  mnesia:dirty_read(testtable, foo).
+[{testtable,foo,bar}]
+(rc@sillhaj)6>f (), Start = now (), [ mnesia:dirty_write ({ testtab, N, N }) || N <- lists:seq (1, 10000) ], End = now (), timer:now_diff (End, Start).
+38335037
+(rc@sillhaj)7>f (), Start = now (), [ mnesia:dirty_read(testtable, N) || N <- lists:seq (1, 10000) ] ,End = now (), timer:now_diff (End, Start).
+11970713
+(rc@sillhaj)8>
+^C
+BREAK: (a)bort (c)ontinue (p)roc info (i)nfo (l)oaded
+       (v)ersion (k)ill (D)b-tables (d)istribution
+a
+
+
+
+To change the default-sever location check cdberl.app or change it by calling
+cdb_srv:set_server({server, "http://it.uu.se", 5984}).
+
