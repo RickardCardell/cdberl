@@ -1,5 +1,12 @@
 README for the cdb-modules
 
+Background:
+	- needed new backend for Mnesia
+	- needed ACID transactions and locking
+	- transparent to current implementation.
+	
+
+
 You need:
 CouchDB >=0.90
 Mnesiaex  http://code.google.com/p/mnesiaex/
@@ -15,13 +22,13 @@ What will work:
 
 What will work with some ad_hoc-modifications of the code:
 - mnesia:select, mnesia:index_read
-- 'complex datatypes' as port, pid, funs, +32bit integers and so on needs some 
+- 'complex datatypes' as port, pid, funs, +32bit integers, floats and so on needs some 
    modification of the code in order to work due to impedance mismatch 
   (they need to be encoded as a base64-string or similar, or tagged up like the 
-   tuple-type)
+   tuple-type).
 
 What doesn't work:
-- the things that are not working with mnesiaex
+- the things that are not working with Mnesiaex
 - revision control (are ignored due to the pessimistic currency control of mnesia)
 
 
@@ -31,6 +38,7 @@ Misc information
 	with the same name as the table name, but with some modification of 
 	cdb_com:all_keys that can be ignored.
 - for more information check inline documentation or send me a message!
+
 
 - to add a table we sometimes need to add cases to the following functions:
 	
@@ -51,7 +59,7 @@ Misc information
 
 	** if don't want to use mnesia you can access couchdb with cdberl directly but 
 	   then you need to specify the default-values for the record in 
-	   cdb_util:default_vals/1 otherwise you will get an exception
+	   cdb_util:default_vals/1 otherwise you will get an exception.
 	
 
 Example:
@@ -64,7 +72,7 @@ ok
 ok
 (rc@sillhaj)3> mnesia:change_table_copy_type (schema, node (), disc_copies).
 {atomic,ok}
-(rc@sillhaj)4>mnesia:create_table(testtable,[{ type, { external, ordered_set, cdb_tab } }, { external_copies, [ node () ]}, {attributes, record_info(fields,employee)}]).
+(rc@sillhaj)4>mnesia:create_table(testtable,[{ type, { external, ordered_set, cdb_tab } }, { external_copies, [ node () ]}]).
 {atomic,ok}
 (rc@sillhaj)5>mnesia:dirty_write({testtable, foo, bar}),  mnesia:dirty_read(testtable, foo).
 [{testtable,foo,bar}]
@@ -81,5 +89,5 @@ a
 
 
 To change the default-sever location check cdberl.app or change it by calling
-cdb_srv:set_server({server, "http://it.uu.se", 5984}).
+cdb_srv:set_server(Tablename, {server, "http://it.uu.se", 5984}). or cdb_srv:set_server(default, {server, "http://it.uu.se", 5984}).
 
