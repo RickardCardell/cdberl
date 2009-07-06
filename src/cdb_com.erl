@@ -28,6 +28,7 @@
 	 all_keys/1,
 	 all_keys/2,
 	 get_value/2,
+     create_view/3,
 	 urlize/1,
 	 urlize_attr/1
         ]).
@@ -383,6 +384,14 @@ all_keys(Tab, Limit) when is_list(Limit) ->
 
 
 
+
+
+create_view(Tab, Design_name, View) -> 
+    {json, Struct} = erlang_couchdb:create_view(get_server(Tab), atom_to_list(Tab), Design_name, <<"javascript">>, View),
+    case get_response_error(Struct) of
+        undefined -> ok;
+        {error, _}=Err -> Err
+    end.
   
 
 
