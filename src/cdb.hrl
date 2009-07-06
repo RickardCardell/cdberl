@@ -13,17 +13,7 @@
 %%          bar,
 %%          baz
 %%         }).
-%%-record(employee, {name=undefined, age=undefined, salary = undefined, 
-%%					ssn=undefined , postnr =undefined,
-%% town=undefined }). 
-%%-record(iplaywow,{playerid, level, name, type}).
-%%-record(family, {year, name, fruit, int}).
 
-
-
--record(employee, {name=undefined, age=undefined, salary = undefined, 
-                  ssn=undefined , postnr =undefined,
- town=undefined }). 
 
 -define(clicks(V), cdb_dbg:clicks(V)).
 -define(clicke(V), cdb_dbg:clicke(V)).
