@@ -35,7 +35,7 @@
 
  
 get_rev(Tab, Key) ->
-	Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+	Doc_id = cdb_util:encode_key(Key,Tab),
 	case erlang_couchdb:document_revision(get_server(Tab), Tab, Doc_id) of	
 		{ok, _Doc_id, Bin_rev} when is_binary(Bin_rev) -> 
 				Rev = binary_to_list(Bin_rev),
@@ -46,7 +46,7 @@ get_rev(Tab, Key) ->
 	end.
 
 get_doc(Table, Key)  when is_atom(Table) ->
-    Doc_id = urlize(cdb_util:encode_key(Key,Table)),
+    Doc_id = cdb_util:encode_key(Key,Table),
     {json, Response} =  erlang_couchdb:retrieve_document(
 			  get_server(Table), 
 			  atom_to_list(Table), Doc_id, []),
@@ -143,7 +143,7 @@ insert_docs(Tab, Docs) when is_list(Docs) ->
     
     Flat_doc_list = lists:map(
 		      fun({Key, Doc}) ->
-			      Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+			      Doc_id = cdb_util:encode_key(Key,Tab),
 			      {struct, D} = 
 				  set_value([<<"_id">>], 
 					    list_to_binary(Doc_id), Doc),
@@ -164,7 +164,7 @@ insert_docs(Tab, Docs) when is_list(Docs) ->
 	{Ok_list, Fail_list}.
 insert_doc(Tab, Key, Doc) -> 
 
-    Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+    Doc_id = cdb_util:encode_key(Key,Tab),
  
     {json, Struct} = 
 	erlang_couchdb:update_document(get_server(Tab), Tab, Doc_id, Doc),
@@ -178,7 +178,7 @@ insert_doc(Tab, Key, Doc) ->
 
 
 delete_doc(Tab, Key) ->
-    Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+    Doc_id = cdb_util:encode_key(Key,Tab),
     case cdb_rev:get_rev(Tab, Key) of		
 	{ok, Revision} ->
 	    %%we remove the entry of the key in rev_table
@@ -272,7 +272,7 @@ invoke_view({_Host, _Port}=Server, Tab, Design, View, Attr)
 
 
 last_key(Tab) ->	
-    Limit =  [{limit,2},{descending, true}],
+    Limit =  [{limit,1},{descending, true}],
     case all_keys(Tab, Limit) of
 	[Key] -> Key;
 	[] -> '$end_of_table';
@@ -280,7 +280,7 @@ last_key(Tab) ->
     end.
 
 first_key(Tab) ->
-    Limit = [{limit,1}],
+    Limit = [{limit,2}],
     case all_keys(Tab, Limit) of
 	[Key] -> Key;
 	[] -> '$end_of_table';
@@ -290,11 +290,11 @@ first_key(Tab) ->
 
 next_key(Tab, Key) ->
     %%io:format("a next call..~p~n",[Key] ),
-    Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+    Doc_id = cdb_util:encode_key(Key,Tab),
     Limit = [{limit,2}, {startkey, "\"" ++ Doc_id ++ "\""}, 
 	     {descending,false}],
     %%io:format("in key: ~p two keys:..~p~n",[Key, all_keys(Tab, Limit)] ),
-    case all_keys(Tab, Limit) of
+    case lists:reverse(all_keys(Tab, Limit)) of
 	[Key , Next_key | _] -> Next_key;
 	[Key] -> '$end_of_table';
 	[L,R] -> error_logger:error_msg("Error in next_key: ~p~n ~p~n (~p)~n",
@@ -302,14 +302,14 @@ next_key(Tab, Key) ->
     end.
 
 prev_key(Tab, Key) ->
-    Doc_id = urlize(cdb_util:encode_key(Key,Tab)),
+    Doc_id = cdb_util:encode_key(Key,Tab),
     Limit = [{limit,3}, 
 	     {startkey, "\"" ++ Doc_id ++ "\"" }, 
 	     {descending, true}],
-    case all_keys(Tab, Limit) of
+    case lists:reverse(all_keys(Tab, Limit)) of
 	[Key , Prev_key | _] -> Prev_key;
 	[Key] -> '$end_of_table';
-	_ -> exit(incorrect_key)
+	_E -> exit(incorrect_key)
     end.
 
 all_keys(Tab) ->
@@ -355,14 +355,15 @@ all_keys(Tab, Limit) when is_list(Limit) ->
 	fun(Struct, Ack) -> 
 	     Id = binary_to_list(
 		    erlang_couchdb:get_value([<<"id">>],Struct)),
-		case lists:prefix("_design/", Id) of
+        
+        case lists:prefix("_design/", Id) of
 		    true -> 
 			%% the doc was a design_document, 
 			%% we will ignore it
 			Ack;
 		    _ ->  			
 			K = cdb_util:decode_key(Id ,Tab),
-			%% here we get the revision number for free 
+            %% here we get the revision number for free 
 			%% so we store it locally
 			Bin_rev =  
 			    erlang_couchdb:get_value(
@@ -376,7 +377,7 @@ all_keys(Tab, Limit) when is_list(Limit) ->
 	end, 
 	[],
 	Key_dict)	
-     ) of Keys -> lists:reverse(Keys)
+     ) of Keys ->  io:format("~p ~n ",[Keys]),Keys %lists:reverse(Keys)
     catch
 	_W:_R -> error_logger:error_msg("Error: ~p ~p ~p~n",
 					[_W,_R, erlang:get_stacktrace()])

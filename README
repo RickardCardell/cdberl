@@ -9,8 +9,6 @@ revision control.
 Of course the cdberl library can be used directly with CouchDB for simple access 
 and by inserting records right into CouchDB.
 
-
-
 Background:
 	- needed new backend for current DBMS. (dets has it's limitations like a 
 		2GB limit per table)
@@ -42,30 +40,17 @@ What will work:
 - transactions
 - locks 
 - ordinary mnesia-calls in a transaction context and as dirty_operations 
-	(read, write, create_table, delete_table, info and more).
+	(read, write, create_table, delete_table, info, table-iterations (as last, first, prev, next and all_keys) and more).
 - views, by looking at them as dirty operations
 - record to json, json to record-conversion - look at the bottom of this doc.
 		
 		
 What will work with some ad_hoc-modifications of the code:
-- 	mnesia:all_keys, 
-	mnesia:prev, 
-	mnesia:next, 
-	mnesia:first,
-	mnesia:last. Because the key of a record is equal the documents id, 
-	every key is converted to a string so to get back to it's native data 
-	type we need to decode it by implementing cdb_util:decode_key/2. It means 
-	that you need to write a case for your table in cdb_util.erl for the 
-	function decode_key/2. Check the function spec for further info. The choice
-	to not use a view is that I wanted a fast retrieval of keys without the 
-	need for a view to be updated. 
-	
 - 	mnesia:select, 
 	mnesia:index_read and 
 	mnesia:match_object if you catch a 
 	specific call to them in cdb_tab and sending the query to a CouchDB view - 
 	ad_hoc.
-- mnesia	
 - 'complex datatypes' as port, pid, funs, >32bit integers, floats and so on 
    needs some modification of the code in order to work due to impedance mismatch 
   (they need to be encoded as a base64-string or similar, or tagged up like the 
@@ -92,9 +77,12 @@ Not yet implemented/TODO (a taste of):
 
 Misc information
 - cdberl communicates with CouchDB via HTTP by using the erlang_couchdb module
-- for now cdb_com assumes that there are one, and only one, design document 
-	with the same name as the table name, but with some modification of 
-	cdb_com:all_keys that can be ignored.
+- for now cdb_com assumes that there are one, and only one, design document in 
+	a table. Otherwise the functionality of mnesia:first/last is broken but 
+	with some modification of cdb_com:first and cdb_com:last that can be 
+	ignored.
+- the doc._id is for now a base64 representation of the record key but that can
+	be changed
 - In a mnesia transaction, writing to the backend is made _after_ a commit 
 	message has been written to the transaction log. This implies that if 
 	CouchDB (or DETS) goes down in the middle of doing some writes, mnesia still 
@@ -107,8 +95,8 @@ Misc information
 	cdb_doc:rec_to_doc/2  * 
 	cdb_doc:doc_to_rec/2  *
 	cdb_util:default_vals/1 **
-	cdb_util:encode_key/2   
-	cdb_util:decode_key/2 
+	cdb_util:encode_key/2 ***  
+	cdb_util:decode_key/2 ***
 	
 	* only needs to be implemented if there are special "terms" that collide with	
 	  json types and javascript inbuilt types. I.e
@@ -122,6 +110,10 @@ Misc information
 	** if don't want to use mnesia you can access couchdb with cdberl directly but 
 	   then you need to specify the default-values for the record in 
 	   cdb_util:default_vals/1 otherwise you will get an exception.
+	   
+	*** if you aren't happy that a doc._id is a base64 term of your record key 
+		then you can use encode_key and decode_key to implement your own 
+		encoder/decoder
 	
 
 Example:

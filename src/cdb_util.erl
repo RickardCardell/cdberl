@@ -19,7 +19,7 @@
 %%encode_key(Key,Rec) when is_record(Rec, employee) orelse Rec == employee ->
 %%    term_to_base64(Key);
 encode_key(Key, _Rec) ->
-    Key.
+    term_to_base64(Key).
 
 %% @doc the opposite of encode_key/2. As the key == doc._id we need to convert 
 %% it back to it's native form, for example if the key was an integer we 
@@ -32,7 +32,7 @@ encode_key(Key, _Rec) ->
 %%decode_key(Key, Rec) when is_record(Rec, employee) orelse Rec == employee ->
 %%    base64_to_term(Key);
 decode_key(Key, _Rec) ->
-    Key.
+   base64_to_term(Key).
 
 
 %% @spec default_vals(Tab::atom()) -> list()

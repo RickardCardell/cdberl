@@ -225,7 +225,9 @@ create_table(Tab, Cs) ->
     { _, ordered_set, _ } = Cs#cstruct.type,
     Response = cdb_com:create_table(Tabid),
     case Response of
-	{ok, _} -> Tabid;
+	{ok, _} -> 
+        cdb_com:create_view(Tabid, atom_to_list(Tabid), ""),
+        Tabid;
 	_Other-> {error, _Other}
     end. 
 
@@ -235,7 +237,7 @@ delete_table(Tab) ->
     Response =cdb_com:delete_table(Tabid),
     case Response of
 	{ok, _} -> {ok, Tab};
-	Err -> Err
+    _Err -> {ok, Tab}
     end.
 
 %% TODO 
