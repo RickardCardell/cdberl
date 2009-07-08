@@ -517,8 +517,13 @@ ext(L1, [{K, V} | T], Result) ->
     NewL1 = proplists:delete(K, L1),
     ext(NewL1, T, [{K,V} | Result]).
 
-%% replaces "/" with %% F" in url
+%% replaces "/" with "%2F" and "+" with "%2B" in url because 
+%% they can exist in base64 but can be considered as unsafe
 escape_url(Url) ->
     lists:foldr(fun(C,Ack) -> 
-			case C of $/ ->  "%2F"++Ack; 
+			case C of 
+			    $/ -> "%2F"++Ack;
+			    $+ -> "%2B"++Ack;
 			    _ ->  [C|Ack] end end,[], Url).
+                
+                

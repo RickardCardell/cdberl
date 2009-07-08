@@ -377,7 +377,8 @@ all_keys(Tab, Limit) when is_list(Limit) ->
 	end, 
 	[],
 	Key_dict)	
-     ) of Keys ->  io:format("~p ~n ",[Keys]),Keys %lists:reverse(Keys)
+     ) of Keys ->  %%io:format("~p ~n ",[Keys]),
+	    Keys %lists:reverse(Keys)
     catch
 	_W:_R -> error_logger:error_msg("Error: ~p ~p ~p~n",
 					[_W,_R, erlang:get_stacktrace()])

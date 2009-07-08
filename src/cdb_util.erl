@@ -12,8 +12,11 @@
 	 to_lower/1,
 	 to_binary/1,
 	 date_compare/3]).
+-include("cdb.hrl").
+
 %% @doc This function can be used to have an arbitrary erlang term 
-%%      as the primary key (_id) in CouchDb
+%%      as the primary key (_id) in CouchDb. See cdb_com:urlize for 
+%%  further inspiration.
 %% @spec encode_key(Key::term(), Rec::record()) -> string() | term()
 
 %%encode_key(Key,Rec) when is_record(Rec, employee) orelse Rec == employee ->
@@ -26,7 +29,7 @@ encode_key(Key, _Rec) ->
 %% will get a string back from CouchDB which we will need to convert back to 
 %% an integer. Or if the key was a tuple we probably converted it to a json-form
 %% as in cdb_doc:encode/1 or as a base64-string which we need convert back. That
-%%  work is done here.
+%%  work is done here. See cdb_com:urlize for further inspiration.
 %% @spec decode_key(Key::string(), Rec::(atom() | tuple())) -> term()
 
 %%decode_key(Key, Rec) when is_record(Rec, employee) orelse Rec == employee ->
@@ -36,11 +39,17 @@ decode_key(Key, _Rec) ->
 
 
 %% @spec default_vals(Tab::atom()) -> list()
-%% @doc returns the attribute names of a record iff its a mnesia table or
+%% @doc returns the attribute values of a record iff its a mnesia table or
 %% matches any of the pattern down below. To add a table that is not in mnesia
 %% just add a case below as:
-%%default_vals(employee) ->
-%%    #employee{};
+default_vals(history) ->
+    #history{};
+default_vals(account) ->
+    #account{};
+default_vals(teller) ->
+    #teller{};
+default_vals(branch) ->
+    #branch{};
 default_vals(Tab) when is_atom(Tab) ->
     Len = length(mnesia_lib:val({Tab, attributes})),
     list_to_tuple([Tab | [ undefined || _ <- lists:seq(1,Len)]]).

@@ -13,7 +13,7 @@
 %%          bar,
 %%          baz
 %%         }).
-
+-include("../test/tpcb.hrl").
 
 -define(clicks(V), cdb_dbg:clicks(V)).
 -define(clicke(V), cdb_dbg:clicke(V)).
