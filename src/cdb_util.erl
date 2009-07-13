@@ -42,14 +42,6 @@ decode_key(Key, _Rec) ->
 %% @doc returns the attribute values of a record iff its a mnesia table or
 %% matches any of the pattern down below. To add a table that is not in mnesia
 %% just add a case below as:
-default_vals(history) ->
-    #history{};
-default_vals(account) ->
-    #account{};
-default_vals(teller) ->
-    #teller{};
-default_vals(branch) ->
-    #branch{};
 default_vals(Tab) when is_atom(Tab) ->
     Len = length(mnesia_lib:val({Tab, attributes})),
     list_to_tuple([Tab | [ undefined || _ <- lists:seq(1,Len)]]).

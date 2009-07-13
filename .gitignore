@@ -7,3 +7,4 @@
 *.beam
 Mnesia.*@*/*
 ./test/*
+*.dump
