@@ -26,15 +26,15 @@ insert(Tab, Recs)  when is_list(Recs) ->
     Docs = [ do_convert(R)|| R <- Recs],    %% a list of {Key, Struct}
     {Oks, Failes} = cdb_com:insert_docs(Tab, Docs),	    
     %% foreach "failed" document we insert them one at a time
-    Failed_twice_docs = [],
-    lists:foldl(fun(K, Ack) ->
-			{value,{K, Doc}} = lists:keysearch(K, 1, Docs),
-			case insert(Tab, K, Doc) of
-			    {ok,_} ->  Ack;
-			    {error, _}=Err -> [Err|Ack]
-			end
-		end,
-		[],Failes),
+    Failed_twice_docs = 
+	lists:foldl(fun(K, Ack) ->
+			    {value,{K, Doc}} = lists:keysearch(K, 1, Docs),
+			    case insert(Tab, K, Doc) of
+				{ok,_} ->  Ack;
+				{error, _}=Err -> [Err|Ack]
+			    end
+		    end,
+		    [],Failes),
     
     %%insert OK:s rev in store
     [ cdb_rev:save_rev(Tab, K, R) || {K, R} <- Oks ],	
