@@ -11,7 +11,9 @@
 	 to_list/1, 
 	 to_lower/1,
 	 to_binary/1,
-	 date_compare/3]).
+	 date_compare/3,
+	 urlize/1,
+	 urlize_attr/1]).
 -include("cdb.hrl").
 
 %% @doc This function can be used to have an arbitrary erlang term 
@@ -201,3 +203,51 @@ date_compare(Pred, {Ms1, _, _}, {Ms2, _, _}) ->
     Pred(Ms1, Ms2).
 
   
+
+urlize(List) when is_list(List) ->
+    urlize_list(List);    
+urlize(Atom) when is_atom(Atom) ->
+   "\"" ++ atom_to_list(Atom) ++ "\"";
+urlize(Tuple) when is_tuple(Tuple) ->
+    "{\"tuple\":" ++ urlize(tuple_to_list(Tuple)) ++ "}";
+urlize(Bin) when is_binary(Bin) ->
+    binary_to_list(Bin);
+urlize(Int) when is_integer(Int) ->
+    integer_to_list(Int);
+urlize(Float) when is_float(Float) ->
+    float_to_list(Float);
+urlize(Pid) when is_pid(Pid) ->
+    pid_to_list(Pid).
+
+    
+		    
+		    
+
+
+urlize_list([]) -> "[]";
+urlize_list([C]) -> "["++urlize(C) ++"]";		
+urlize_list([H|T]) ->
+	"[" ++ urlize(H) ++	
+	(lists:foldl(fun(C, Ack) ->
+		"," ++ urlize(C) ++ Ack end,
+		"",lists:reverse(T))) ++  "]".
+
+
+
+
+
+
+urlize_attr(Attr) ->
+    lists:map(fun({K,V} = Tuple) ->
+			 L = [key,
+			      startkey,
+			      endkey,
+			      startkey_docid,
+			      endkey_docid],
+			 case lists:member(K,L) of
+			     true ->
+				 {K,   list_to_binary(urlize(V))};
+			     _ -> Tuple
+			 end;
+		  (Other) -> Other
+		 end, Attr).

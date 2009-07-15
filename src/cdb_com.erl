@@ -28,9 +28,7 @@
 	 all_keys/1,
 	 all_keys/2,
 	 get_value/2,
-     create_view/3,
-	 urlize/1,
-	 urlize_attr/1
+	 create_view/3	
         ]).
 
  
@@ -257,7 +255,7 @@ invoke_view(Tab, Design, View, Attr) ->
 invoke_view({_Host, _Port}=Server, Tab, Design, View, Attr) 
   when is_atom(Tab), is_list(Design), is_list(View), is_list(Attr)-> 
     
-    Attr_urlized = urlize_attr(Attr),
+    Attr_urlized = cdb_util:urlize_attr(Attr),
     %io:format("~p ",[Attr_urlized]),
     
     {json, Response} = erlang_couchdb:invoke_view(Server, 
@@ -389,7 +387,12 @@ all_keys(Tab, Limit) when is_list(Limit) ->
 
 
 create_view(Tab, Design_name, View) -> 
-    {json, Struct} = erlang_couchdb:create_view(get_server(Tab), atom_to_list(Tab), Design_name, <<"javascript">>, View),
+    {json, Struct} = erlang_couchdb:create_view(
+		       get_server(Tab), 
+		       atom_to_list(Tab), 
+		       Design_name, 
+		       <<"javascript">>, 
+		       View),
     case get_response_error(Struct) of
         undefined -> ok;
         {error, _}=Err -> Err
@@ -408,50 +411,3 @@ get_server(Tab) ->
     {Host, Port}.
 
 
-urlize(List) when is_list(List) ->
-    urlize_list(List);    
-urlize(Atom) when is_atom(Atom) ->
-   "\"" ++ atom_to_list(Atom) ++ "\"";
-urlize(Tuple) when is_tuple(Tuple) ->
-    "{\"tuple\":" ++ urlize(tuple_to_list(Tuple)) ++ "}";
-urlize(Bin) when is_binary(Bin) ->
-    binary_to_list(Bin);
-urlize(Int) when is_integer(Int) ->
-    integer_to_list(Int);
-urlize(Float) when is_float(Float) ->
-    float_to_list(Float);
-urlize(Pid) when is_pid(Pid) ->
-    pid_to_list(Pid).
-
-    
-		    
-		    
-
-
-urlize_list([]) -> "[]";
-urlize_list([C]) -> "["++urlize(C) ++"]";		
-urlize_list([H|T]) ->
-	"[" ++ urlize(H) ++	
-	(lists:foldl(fun(C, Ack) ->
-		"," ++ urlize(C) ++ Ack end,
-		"",lists:reverse(T))) ++  "]".
-
-
-
-
-
-
-urlize_attr(Attr) ->
-    lists:map(fun({K,V} = Tuple) ->
-			 L = [key,
-			      startkey,
-			      endkey,
-			      startkey_docid,
-			      endkey_docid],
-			 case lists:member(K,L) of
-			     true ->
-				 {K,   list_to_binary(urlize(V))};
-			     _ -> Tuple
-			 end;
-		  (Other) -> Other
-		 end, Attr).

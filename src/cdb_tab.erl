@@ -123,7 +123,7 @@ match_object(Tab, Pat) ->
 %% [Match::object()] | {error, Reason}
 %% @doc Here you can catch select calls and by parsing the match spec you can 
 %% send it to the right view (will be very ad_hoc of course).
-%% An mnesia:all_keys-call can be catched here without a view.
+%% A mnesia:all_keys-call can be catched here without a view.
 select(Tab, Pat) ->
  case is_all_keys(Pat) of
 	true -> cdb_com:all_keys(get_tab_id(Tab));
@@ -276,7 +276,7 @@ get_tab_id({Tab, {{T1,T2,T3},_Node}}) -> %% checkpoint retainer
 		 integer_to_list(T2) ++integer_to_list(T3) ++ "_ret").
 		 
 %% @hidden
-%%@spec get_index(Pat::tuple()) -> {Var:term(), Index_pos:int()} | Exception
+%%@spec get_index(Pat::tuple()) -> {Var::term(), Index_pos::integer()} | Exception
 get_index(Pat) ->
 	get_ix(tl(tuple_to_list(Pat)),2).
 	
