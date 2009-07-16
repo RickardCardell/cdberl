@@ -37,8 +37,6 @@ encode_key(Key, _Rec) ->
 %%decode_key(Key, Rec) when is_record(Rec, employee) orelse Rec == employee ->
 %%    base64_to_term(Key);
 decode_key(Key, _Rec) ->
-   base64_to_term(Key);
-decode_key(Key, _Rec) ->
    base64_to_term(Key).
 
 
