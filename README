@@ -32,6 +32,9 @@ Installation
 		erlc -o ebin src/*.erl  
 
 
+
+Check out the wiki for more information: http://wiki.github.com/RCardell/cdberl
+
 Example
 -------------------------------------------------------------------------------
 
