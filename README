@@ -34,8 +34,8 @@ Installation
 		
 Observe
 -------
-In CoudhDB there are no tables just databases, but I call it tables and uses 
-it as tables 
+In CoudhDB there are no tables, just databases, but as to avoid confusion and 
+to simplify things, I call it tables anyway   
 	
 What will work
 ++++++++++++++
