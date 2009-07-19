@@ -5,6 +5,8 @@ it's benefits: scalable, reliable, large storage and so on.
 Of course the cdberl library can be used directly with CouchDB for simple access 
 and by inserting records right into CouchDB.
 
+Look at this library as a proof-of-concept.
+
 Background
 ----------
 	- needed new backend for current DBMS. (dets has it's limitations like a 
