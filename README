@@ -59,7 +59,7 @@ ok
 
 %% read and write a record
 (rc@sillhaj)5>mnesia:dirty_write({testtable, foo, {an_atom, 1234, "string", {tuple}}),  mnesia:dirty_read(testtable, foo).
-[{testtable,foo,bar}]
+[{testtable, foo, {an_atom, 1234, "string", {tuple}}]
 
 %% a simple write test, only for fun
 (rc@sillhaj)6>f (), Start = now (), [ mnesia:dirty_write ({ testtab, N, N }) || N <- lists:seq (1, 10000) ], End = now (), timer:now_diff (End, Start).
